@@ -8,28 +8,18 @@ import levelErrors from "level-errors"
 import { Oy } from "."
 
 test("create and destroy", async (t) => {
-  t.plan(3)
   const oy = new Oy("test-dbs/t1", { errorIfExists: true })
-  t.pass()
   await oy.ready()
-  t.pass()
   await oy.destroy()
   t.pass()
 })
 
 test("create (existing) and destroy", async (t) => {
-  t.plan(6)
   const oy = new Oy("test-dbs/t2", { errorIfExists: true })
-  t.pass()
   await oy.ready()
-  t.pass()
-
   await oy.close()
-  t.pass()
 
   const oy2 = new Oy("test-dbs/t2", { errorIfExists: true })
-  t.pass()
-
   t.throwsAsync(oy2.ready(), {
     instanceOf: levelErrors.OpenError,
     message: /^Invalid argument: .+: exists \(error_if_exists is true\)$/,
@@ -39,19 +29,33 @@ test("create (existing) and destroy", async (t) => {
 })
 
 test("create (twice) and destroy", async (t) => {
-  t.plan(5)
   const oy = new Oy("test-dbs/t3", { errorIfExists: true })
-  t.pass()
   await oy.ready()
-  t.pass()
 
   const oy2 = new Oy("test-dbs/t3", { errorIfExists: true })
-  t.pass()
-
   t.throwsAsync(oy2.ready(), {
     instanceOf: levelErrors.OpenError,
     message: /^IO error: lock .+\/LOCK: already held by process$/,
   })
+  await oy.destroy()
+  t.pass()
+})
+
+test("put (root)", async (t) => {
+  const oy = new Oy("test-dbs/t4", { errorIfExists: true })
+  await oy.ready()
+  t.throwsAsync(oy.put("this", "that"), {
+    instanceOf: Error,
+    message: "Malformed key.",
+  })
+  await oy.destroy()
+  t.pass()
+})
+
+test("put (root, prefixed)", async (t) => {
+  const oy = new Oy("test-dbs/t5", { errorIfExists: true })
+  await oy.ready()
+  await oy.put("more:this", "that")
   await oy.destroy()
   t.pass()
 })
