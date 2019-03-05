@@ -2,6 +2,7 @@
 
 // npm
 import test from "ava"
+// import leveldown from "leveldown"
 
 // self
 // import { Oy, evs } from './lib/oy.js'
@@ -22,7 +23,7 @@ const evs = [
 
 // test.cb('foo', (t) => {
 test("foo", async (t) => {
-  t.plan(6)
+  t.plan(7)
   const oy = new Oy("fabadoo")
 
   evs.forEach((ev) => {
@@ -69,6 +70,8 @@ a1.put('al3', 'vroom3')
   t.pass()
   if (!key) {
     await za.end()
+    t.pass()
+    await oy.destroy()
     t.pass()
   }
 
