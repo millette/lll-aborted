@@ -1,50 +1,46 @@
-'use strict'
+"use strict"
 
 // npm
-import test from 'ava'
-
-
+import test from "ava"
 
 // self
 // import { Oy, evs } from './lib/oy.js'
 // import Oy from './lib/oy.js'
-import { Oy } from '.'
+import { Oy } from "."
 
 const evs = [
-  'error',
-  'put',
-  'del',
-  'batch',
-  'opening',
-  'open',
-  'ready',
-  'closing',
-  'closed',
+  "error",
+  "put",
+  "del",
+  "batch",
+  "opening",
+  "open",
+  "ready",
+  "closing",
+  "closed",
 ]
 
 // test.cb('foo', (t) => {
-test('foo', async (t) => {
+test("foo", async (t) => {
   t.plan(6)
-  const oy = new Oy('fabadoo')
+  const oy = new Oy("fabadoo")
 
   evs.forEach((ev) => {
     oy.on(ev, (a, b, c) => {
-      console.log('oy:', ev.toUpperCase(), a, b, c)
+      console.log("oy:", ev.toUpperCase(), a, b, c)
     })
   })
-
 
   t.is(oy.tableNames.length, 0)
-  oy.createTable('bob')
+  oy.createTable("bob")
   t.is(oy.tableNames.length, 1)
-  const a1 = oy.table('bob')
+  const a1 = oy.table("bob")
 
   evs.forEach((ev) => {
-    a1.on(ev, function (a, b, c) {
-      console.log('table:', this.prefix, ev.toUpperCase(), a, b, c)
+    a1.on(ev, function(a, b, c) {
+      console.log("table:", this.prefix, ev.toUpperCase(), a, b, c)
     })
   })
-
 
   /*
   try {
@@ -55,28 +51,28 @@ test('foo', async (t) => {
   }
   */
 
-/*
+  /*
 a1.put('al3', 'vroom3')
   .then((it) => {
     console.log(it)
 */
 
-    const za = a1.iterator()
+  const za = a1.iterator()
 
-    await za.next()
+  await za.next()
+  t.pass()
+
+  await za.next()
+  t.pass()
+
+  const { key } = await za.next()
+  t.pass()
+  if (!key) {
+    await za.end()
     t.pass()
+  }
 
-    await za.next()
-    t.pass()
-
-    const { key } = await za.next()
-    t.pass()
-    if (!key) {
-      await za.end()
-      t.pass()
-    }
-
-    /*
+  /*
     za.next((a, b, c) => {
       console.log('it1', a, b, c)
       t.pass()
@@ -101,15 +97,13 @@ a1.put('al3', 'vroom3')
     })
     */
 
-
-/*
+  /*
   })
   .catch ((e) => {
     console.error('put', e)
     t.end()
   })
 */
-
 
   /*
   // const a2 = oy.table('joe')
