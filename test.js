@@ -2,46 +2,68 @@
 
 // npm
 import test from "ava"
-// import leveldown from "leveldown"
+import levelErrors from "level-errors"
 
 // self
-// import { Oy, evs } from './lib/oy.js'
-// import Oy from './lib/oy.js'
 import { Oy } from "."
 
-const evs = [
-  "error",
-  "put",
-  "del",
-  "batch",
-  "opening",
-  "open",
-  "ready",
-  "closing",
-  "closed",
-]
+test("create and destroy", async (t) => {
+  t.plan(3)
+  const oy = new Oy("test-dbs/t1", { errorIfExists: true })
+  t.pass()
+  await oy.ready()
+  t.pass()
+  await oy.destroy()
+  t.pass()
+})
 
-// test.cb('foo', (t) => {
-test("foo", async (t) => {
+test("create (existing) and destroy", async (t) => {
+  t.plan(6)
+  const oy = new Oy("test-dbs/t2", { errorIfExists: true })
+  t.pass()
+  await oy.ready()
+  t.pass()
+
+  await oy.close()
+  t.pass()
+
+  const oy2 = new Oy("test-dbs/t2", { errorIfExists: true })
+  t.pass()
+
+  t.throwsAsync(oy2.ready(), {
+    instanceOf: levelErrors.OpenError,
+    message: /^Invalid argument: .+: exists \(error_if_exists is true\)$/,
+  })
+  await oy.destroy()
+  t.pass()
+})
+
+test("create (twice) and destroy", async (t) => {
+  t.plan(5)
+  const oy = new Oy("test-dbs/t3", { errorIfExists: true })
+  t.pass()
+  await oy.ready()
+  t.pass()
+
+  const oy2 = new Oy("test-dbs/t3", { errorIfExists: true })
+  t.pass()
+
+  t.throwsAsync(oy2.ready(), {
+    instanceOf: levelErrors.OpenError,
+    message: /^IO error: lock .+\/LOCK: already held by process$/,
+  })
+  await oy.destroy()
+  t.pass()
+})
+
+test.skip("foo", async (t) => {
   t.plan(7)
   const oy = new Oy("fabadoo")
-
-  evs.forEach((ev) => {
-    oy.on(ev, (a, b, c) => {
-      console.log("oy:", ev.toUpperCase(), a, b, c)
-    })
-  })
 
   t.is(oy.tableNames.length, 0)
   oy.createTable("bob")
   t.is(oy.tableNames.length, 1)
   const a1 = oy.table("bob")
-
-  evs.forEach((ev) => {
-    a1.on(ev, function(a, b, c) {
-      console.log("table:", this.prefix, ev.toUpperCase(), a, b, c)
-    })
-  })
 
   /*
   try {
@@ -60,10 +82,12 @@ a1.put('al3', 'vroom3')
 
   const za = a1.iterator()
 
-  await za.next()
+  const t1 = await za.next()
+  console.log("t1:", t1)
   t.pass()
 
-  await za.next()
+  const t2 = await za.next()
+  console.log("t2:", t2)
   t.pass()
 
   const { key } = await za.next()
@@ -134,14 +158,3 @@ a1.put('al3', 'vroom3')
 
   // console.log(a2)
 })
-
-/*
-test('foo', (t) => {
-	t.pass()
-})
-
-test('bar', async (t) => {
-	const bar = Promise.resolve('bar')
-	t.is(await bar, 'bar')
-})
-*/
