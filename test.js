@@ -60,22 +60,20 @@ test("put (root, prefixed)", async (t) => {
   t.pass()
 })
 
-test.only("create table", async (t) => {
+test("create table", async (t) => {
   const oy = new Oy("test-dbs/t6", { errorIfExists: true })
   await oy.ready()
-  console.log("STEP-1")
   const table = await oy.createTable("more")
-  console.log("STEP-2")
 
   await oy.close()
 
-  const oy2 = new Oy("test-dbs/t6", { errorIfExists: true })
+  const oy2 = new Oy("test-dbs/t6", { errorIfExists: false })
+
   await oy2.ready()
 
   const tableOne = oy2.table("more")
-  console.log("STEP-3")
 
-  await oy.destroy()
+  await oy2.destroy()
   t.pass()
 })
 
