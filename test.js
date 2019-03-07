@@ -92,7 +92,7 @@ test("put (tables) and iterator", async (t) => {
   t.is(n1, "is")
   t.is(n2, "is2")
 
-  const za = table.iterator()
+  const za = table.iterator({ gte: "a" })
 
   let key
   let value
@@ -109,6 +109,79 @@ test("put (tables) and iterator", async (t) => {
   }
 
   t.is(n, 1)
+  await oy.destroy()
+})
+
+test("put (tables) and iterator (v2", async (t) => {
+  t.plan(1)
+  const oy = new Oy("test-dbs/t8", { errorIfExists: true })
+  await oy.ready()
+  const table = await oy.createTable("more")
+  const table2 = await oy.createTable("more2")
+
+  await table.put("it", "is")
+  await table2.put("it2", "is2")
+
+  const za = table.iterator({ gte: "j" })
+
+  let key
+  let value
+  let n = 0
+
+  while (({ key, value } = await za.next())) {
+    if (key === undefined && value === undefined) {
+      await za.end()
+      break
+    }
+    t.is(key, "it")
+    t.is(value, "is")
+    ++n
+  }
+
+  t.is(n, 0)
+  await oy.destroy()
+})
+
+test.only("put (tables) and stream", async (t) => {
+  t.plan(3)
+  const oy = new Oy("test-dbs/t9", { errorIfExists: true })
+  await oy.ready()
+  const table = await oy.createTable("more")
+  const table2 = await oy.createTable("more2")
+
+  await table.put("it", "is")
+  await table2.put("it2", "is2")
+
+  // const za = table.iterator({ gte: 'a' })
+  let n = 0
+  const str = table.createReadStream({ gte: "a" })
+  console.log("STR", str)
+  str.on("data", ({ key, value }) => {
+    consoe.log("DATA", key, value)
+    t.is(key, "it")
+    t.is(value, "is")
+    ++n
+  })
+
+  t.is(n, 1)
+
+  /*
+  let key
+  let value
+  let n = 0
+
+  while (({ key, value } = await za.next())) {
+    if (key === undefined && value === undefined) {
+      await za.end()
+      break
+    }
+    t.is(key, "it")
+    t.is(value, "is")
+    ++n
+  }
+
+  t.is(n, 1)
+  */
   await oy.destroy()
 })
 
