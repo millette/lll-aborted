@@ -77,6 +77,41 @@ test("create table", async (t) => {
   t.pass()
 })
 
+test("put (tables) and iterator", async (t) => {
+  const oy = new Oy("test-dbs/t7", { errorIfExists: true })
+  await oy.ready()
+  const table = await oy.createTable("more")
+  const table2 = await oy.createTable("more2")
+
+  await table.put("it", "is")
+  await table2.put("it2", "is2")
+
+  const n1 = await table.get("it")
+  const n2 = await table2.get("it2")
+
+  t.is(n1, "is")
+  t.is(n2, "is2")
+
+  const za = table.iterator()
+
+  let key
+  let value
+  let n = 0
+
+  while (({ key, value } = await za.next())) {
+    if (key === undefined && value === undefined) {
+      await za.end()
+      break
+    }
+    t.is(key, "it")
+    t.is(value, "is")
+    ++n
+  }
+
+  t.is(n, 1)
+  await oy.destroy()
+})
+
 test.skip("foo", async (t) => {
   t.plan(7)
   const oy = new Oy("fabadoo")
