@@ -5,3 +5,4 @@ node_modules
 lib/oy-orig.js
 testorig.js
 test-dbs
+lib/oy-cb.js
