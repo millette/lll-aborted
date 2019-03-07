@@ -150,14 +150,16 @@ test.only("put (tables) and stream", async (t) => {
   const table2 = await oy.createTable("more2")
 
   await table.put("it", "is")
+  await table.put("bo", "bo")
   await table2.put("it2", "is2")
 
   // const za = table.iterator({ gte: 'a' })
   let n = 0
-  const str = table.createReadStream({ gte: "a" })
-  console.log("STR", str)
+  const str = table.createReadStream({}) // { gte: "a" }
+  // console.log("STR", str)
+  str.on("error", (er) => console.log("ERRRRR:", er))
   str.on("data", ({ key, value }) => {
-    consoe.log("DATA", key, value)
+    console.log("DATA", key, value)
     t.is(key, "it")
     t.is(value, "is")
     ++n
